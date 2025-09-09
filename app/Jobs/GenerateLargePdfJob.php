@@ -19,7 +19,7 @@ class GenerateLargePdfJob implements ShouldQueue
 
     protected $chunkSize;
 
-    public function __construct(int $chunkSize = 100)
+    public function __construct(int $chunkSize = 200)
     {
         $this->chunkSize = $chunkSize;
     }
@@ -44,7 +44,6 @@ class GenerateLargePdfJob implements ShouldQueue
     
         // Process users in chunks
         User::select(['id', 'name', 'email', 'created_at'])
-      
             ->orderBy('id')
             ->chunk($chunkSize, function($users) use (&$chunkCount, $batchId, $chunkSize) {
                 $chunkCount++;
@@ -77,3 +76,4 @@ class GenerateLargePdfJob implements ShouldQueue
         ]);
     }
 }
+

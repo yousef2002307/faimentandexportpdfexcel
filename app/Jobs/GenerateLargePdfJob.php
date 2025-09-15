@@ -12,7 +12,7 @@ use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Log;
 use App\Jobs\ProcessPdfChunk;
 use App\Jobs\MergePdfChunks;
-
+use Illuminate\Support\Facades\DB;
 class GenerateLargePdfJob implements ShouldQueue
 {
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
@@ -26,7 +26,7 @@ class GenerateLargePdfJob implements ShouldQueue
 
     public function handle()
     {
-        $totalUsers = User::count();
+        $totalUsers = DB::table('users')->count();
         $chunkSize = $this->chunkSize;
         $batchId = (string) Str::uuid();
         $chunkCount = 0;
@@ -43,7 +43,8 @@ class GenerateLargePdfJob implements ShouldQueue
         }
     
         // Process users in chunks
-        User::select(['id', 'name', 'email', 'created_at'])
+        DB::table('users')->select(['id', 'name', 'email', 'created_at'])
+            
             ->orderBy('id')
             ->chunk($chunkSize, function($users) use (&$chunkCount, $batchId, $chunkSize) {
                 $chunkCount++;
@@ -62,12 +63,12 @@ class GenerateLargePdfJob implements ShouldQueue
                     $chunkSize,  // Keep using the original chunk size
                     $chunkCount,
                     $batchId
-                )->onQueue('default');
+                )->onQueue('default');  
             });
         
         // Dispatch final merge job
         MergePdfChunks::dispatch($batchId, $chunkCount)
-            ->onQueue('default')
+            ->onQueue('merge')
             ->delay(now()->addMinutes(1));
             
         Log::info("All chunks dispatched", [

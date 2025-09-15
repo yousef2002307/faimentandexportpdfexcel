@@ -19,6 +19,9 @@ use Filament\Tables\Columns\TextColumn;
 use Filament\Forms\Components\Section;
 use Filament\Forms\Components\Tabs;
 use Filament\Forms\Components\Tabs\Tab;
+use Filament\Tables\Filters\SelectFilter;
+use Filament\Tables\Filters\SearchFilter;
+
 
 class PostResource extends Resource
 {
@@ -100,7 +103,10 @@ class PostResource extends Resource
                 ->searchable(),
             ])
             ->filters([
-                //
+                SelectFilter::make('category_id')
+                ->relationship('category', 'name')
+              
+                ->searchable(),
             ])
             ->actions([
                 Tables\Actions\EditAction::make(),

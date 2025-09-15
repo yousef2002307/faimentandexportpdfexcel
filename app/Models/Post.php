@@ -4,7 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
-
+use Illuminate\Database\Eloquent\Relations\HasMany;
 class Post extends Model
 {
     protected $guarded = [];
@@ -19,5 +19,9 @@ class Post extends Model
     public function authors() : BelongsToMany
     {
         return $this->belongsToMany(User::class,'post_user','post_id','user_id')->withTimestamps()->withPivot('order');
+    }
+    public function comments() : HasMany
+    {
+        return $this->morphMany(Comment::class, 'commentable');
     }
 }

@@ -28,7 +28,7 @@ class UserExport implements FromCollection, WithHeadings, ShouldAutoSize, WithSt
                 'ID' => $user->id,
                 'Name' => $user->name,
                 'Email' => $user->email,
-                'Created At' => $user->created_at->format('Y-m-d H:i:s'),
+                'Created At' => $user->created_at,
             ];
         });
     }

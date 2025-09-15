@@ -11,6 +11,7 @@ use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
 use Maatwebsite\Excel\Facades\Excel;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\DB;
 
 class ProcessExcelChunk implements ShouldQueue
 {
@@ -66,8 +67,9 @@ class ProcessExcelChunk implements ShouldQueue
             $appFullPath = storage_path("app/{$relativePath}");
             
             // Get users for this chunk
-            $users = User::select(['id', 'name', 'email', 'created_at'])
-                ->where('id', '>=', $this->startId)
+            $users = DB::table('users')->select(['id', 'name', 'email', 'created_at'])
+             
+            ->where('id', '>=', $this->startId)
                 ->limit($this->chunkSize)
                 ->orderBy('id')
                 ->get();

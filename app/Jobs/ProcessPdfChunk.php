@@ -9,7 +9,7 @@ use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
-
+use Illuminate\Support\Facades\DB;
 class ProcessPdfChunk implements ShouldQueue
 {
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
@@ -34,7 +34,7 @@ class ProcessPdfChunk implements ShouldQueue
             gc_collect_cycles();
             
             // Get users with cursor to save memory
-            $users = User::select(['id', 'name', 'email', 'created_at'])
+            $users = DB::table('users')->select(['id', 'name', 'email', 'created_at'])
                 ->where('id', '>=', $this->startId)
                 ->orderBy('id')
                 ->limit($this->chunkSize)

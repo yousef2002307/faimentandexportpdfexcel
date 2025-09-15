@@ -12,7 +12,7 @@ use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Log;
 use App\Jobs\ProcessExcelChunk;
 use App\Jobs\MergeExcelChunks;
-
+use Illuminate\Support\Facades\DB;
 class GenerateLargeExcelJob implements ShouldQueue
 {
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
@@ -28,7 +28,7 @@ class GenerateLargeExcelJob implements ShouldQueue
 
     public function handle()
     {
-        $totalUsers = User::count();
+        $totalUsers = DB::table('users')->count();
         $chunkSize = $this->chunkSize;
         $batchId = (string) Str::uuid();
         $chunkCount = 0;
@@ -80,7 +80,8 @@ class GenerateLargeExcelJob implements ShouldQueue
     
         try {
             // Process users in chunks
-            User::select(['id', 'name', 'email', 'created_at'])
+            DB::table('users')->select(['id', 'name', 'email', 'created_at'])
+               
                 ->orderBy('id')
                 ->chunk($chunkSize, function($users) use (&$chunkCount, $batchId, $tempDir) {
                     $chunkCount++;
@@ -110,7 +111,7 @@ class GenerateLargeExcelJob implements ShouldQueue
                 // Dispatch final merge job with a delay to allow all chunks to be processed
                 $mergeDelay = now()->addMinutes(1);
                 MergeExcelChunks::dispatch($batchId, $chunkCount, $tempDir, $this->exportPath)
-                    ->onQueue('default')
+                    ->onQueue('merge')
                     ->delay($mergeDelay);
                     
                 Log::info("All chunks dispatched for merging", [
